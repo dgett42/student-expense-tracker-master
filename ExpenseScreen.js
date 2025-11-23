@@ -8,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Modal,
 } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
 
@@ -20,6 +21,14 @@ export default function ExpenseScreen() {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
+
+  const [editAmount, setEditAmount] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editNote, setEditNote] = useState('');
+  const [editDate, setEditDate] = useState('');
+
 
   const loadExpenses = async () => {
     const rows = await db.getAllAsync(
@@ -67,18 +76,29 @@ export default function ExpenseScreen() {
 
 
   const renderExpense = ({ item }) => (
-    <View style={styles.expenseRow}>
+    <TouchableOpacity
+      onPress={() => {
+      setEditingExpense(item);
+      setEditAmount(String(item.amount));
+      setEditCategory(item.category);
+      setEditNote(item.note || '');
+      setEditDate(item.date);
+      setIsEditing(true);
+      }}
+      >
+      
       <View style={{ flex: 1 }}>
         <Text style={styles.expenseAmount}>${Number(item.amount).toFixed(2)}</Text>
         <Text style={styles.expenseCategory}>{item.category}</Text>
         {item.note ? <Text style={styles.expenseNote}>{item.note}</Text> : null}
         <Text style={styles.expenseNote}>{item.date}</Text>
-      </View>
+         
 
       <TouchableOpacity onPress={() => deleteExpense(item.id)}>
         <Text style={styles.delete}>✕</Text>
       </TouchableOpacity>
     </View>
+      </TouchableOpacity>
   );
 
   function applyFilter(allExpenses, filterType) {
@@ -128,6 +148,27 @@ export default function ExpenseScreen() {
   setFilteredExpenses(result);
 }, [expenses, filter]);
 
+const handleSaveEdit = async () => {
+  if (!editingExpense) return;
+
+  const amountNumber = parseFloat(editAmount);
+  if (isNaN(amountNumber) || amountNumber <= 0) {
+    alert('Invalid amount');
+    return;
+  }
+
+  await db.runAsync(
+    `UPDATE expenses
+     SET amount = ?, category = ?, note = ?, date = ?
+     WHERE id = ?`,
+    [amountNumber, editCategory, editNote, editDate, editingExpense.id]
+  );
+
+  setIsEditing(false);
+  setEditingExpense(null);
+
+  loadExpenses();
+};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -174,6 +215,52 @@ export default function ExpenseScreen() {
           <Text style={styles.empty}>No expenses yet.</Text>
         }
       />
+
+      <Modal visible={isEditing} animationType="slide">
+  <View style={{ flex: 1, padding: 20, backgroundColor: '#111827' }}>
+    <Text style={{ fontSize: 20, marginBottom: 20, color: '#fff' }}>
+      Edit Expense
+    </Text>
+
+    <TextInput
+      style={styles.input}
+      value={editAmount}
+      onChangeText={setEditAmount}
+      keyboardType="numeric"
+      placeholder="Amount"
+      placeholderTextColor="#9ca3af"
+    />
+
+    <TextInput
+      style={styles.input}
+      value={editCategory}
+      onChangeText={setEditCategory}
+      placeholder="Category"
+      placeholderTextColor="#9ca3af"
+    />
+
+    <TextInput
+      style={styles.input}
+      value={editNote}
+      onChangeText={setEditNote}
+      placeholder="Note"
+      placeholderTextColor="#9ca3af"
+    />
+
+    <TextInput
+      style={styles.input}
+      value={editDate}
+      onChangeText={setEditDate}
+      placeholder="YYYY-MM-DD"
+      placeholderTextColor="#9ca3af"
+    />
+
+    <Button title="Save Changes" onPress={handleSaveEdit} />
+    <View style={{ height: 10 }} />
+    <Button title="Cancel" color="gray" onPress={() => setIsEditing(false)} />
+  </View>
+</Modal>
+
 
       <Text style={styles.footer}>
         Enter your expenses and they’ll be saved locally with SQLite.
