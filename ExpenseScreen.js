@@ -43,19 +43,20 @@ export default function ExpenseScreen() {
     const amountNumber = parseFloat(amount);
 
     if (isNaN(amountNumber) || amountNumber <= 0) {
-      // Basic validation: ignore invalid or non-positive amounts
-      return;
-    }
+    alert('Please enter an amount greater than 0');
+    return;
+  }
 
     const trimmedCategory = category.trim();
     const trimmedNote = note.trim();
 
     if (!trimmedCategory) {
-      // Category is required
-      return;
-    }
+    alert('Category is required');
+    return;
+  }
 
     const today = new Date().toISOString().split('T')[0]; 
+   try {
     await db.runAsync(
           'INSERT INTO expenses (amount, category, note, date) VALUES (?, ?, ?, ?);',
       [amountNumber, trimmedCategory, trimmedNote || null, today]
@@ -65,9 +66,12 @@ export default function ExpenseScreen() {
     setCategory('');
     setNote('');
 
-    loadExpenses();
+    await loadExpenses();
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      alert(`Error saving expense: ` + error.message);  
+    }
   };
-
 
   const deleteExpense = async (id) => {
     await db.runAsync('DELETE FROM expenses WHERE id = ?;', [id]);
