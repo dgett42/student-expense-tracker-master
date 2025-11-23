@@ -68,6 +68,7 @@ export default function ExpenseScreen() {
         <Text style={styles.expenseAmount}>${Number(item.amount).toFixed(2)}</Text>
         <Text style={styles.expenseCategory}>{item.category}</Text>
         {item.note ? <Text style={styles.expenseNote}>{item.note}</Text> : null}
+        <Text style={styles.expenseNote}>{item.date}</Text>
       </View>
 
       <TouchableOpacity onPress={() => deleteExpense(item.id)}>
@@ -197,4 +198,9 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 12,
   },
+  expenseDate: {
+  fontSize: 12,
+  color: '#6b7280',
+  marginTop: 4,
+},
 });
