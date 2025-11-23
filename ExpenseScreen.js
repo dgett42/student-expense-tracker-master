@@ -91,14 +91,14 @@ export default function ExpenseScreen() {
         <Text style={styles.expenseAmount}>${Number(item.amount).toFixed(2)}</Text>
         <Text style={styles.expenseCategory}>{item.category}</Text>
         {item.note ? <Text style={styles.expenseNote}>{item.note}</Text> : null}
-        <Text style={styles.expenseNote}>{item.date}</Text>
+        <Text style={styles.expenseDate}>{item.date}</Text>
          
 
-      <TouchableOpacity onPress={() => deleteExpense(item.id)}>
+        <TouchableOpacity onPress={() => deleteExpense(item.id)}>
         <Text style={styles.delete}>✕</Text>
-      </TouchableOpacity>
-    </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 
   function applyFilter(allExpenses, filterType) {
@@ -122,6 +122,24 @@ export default function ExpenseScreen() {
   }
 
   return allExpenses;
+}
+
+function getAnalytics(expensesList) {
+  
+  const total = expensesList.reduce(
+    (sum, e) => sum + Number(e.amount || 0),
+    0
+  );
+
+  
+  const byCategory = {};
+  expensesList.forEach((e) => {
+    const cat = e.category || 'Uncategorized';
+    if (!byCategory[cat]) byCategory[cat] = 0;
+    byCategory[cat] += Number(e.amount || 0);
+  });
+
+  return { total, byCategory };
 }
 
 
@@ -170,6 +188,8 @@ const handleSaveEdit = async () => {
   loadExpenses();
 };
 
+const { total, byCategory } = getAnalytics(filteredExpenses);
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.heading}>Student Expense Tracker</Text>
@@ -206,7 +226,17 @@ const handleSaveEdit = async () => {
         <Button title="This Month" onPress={() => setFilter('month')} />
       </View>
 
+      <View style={{ padding: 8 }}>
+  <Text style={{ color: '#fff', fontWeight: '700' }}>
+    Total: ${total.toFixed(2)}
+  </Text>
 
+  {Object.entries(byCategory).map(([cat, amt]) => (
+    <Text key={cat} style={{ color: '#e5e7eb', fontSize: 12 }}>
+      {cat}: ${amt.toFixed(2)}
+    </Text>
+  ))}
+</View>
       <FlatList
         data={filteredExpenses}
         keyExtractor={(item) => item.id.toString()}
