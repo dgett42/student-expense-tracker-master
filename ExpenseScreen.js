@@ -15,6 +15,8 @@ export default function ExpenseScreen() {
   const db = useSQLiteContext();
 
   const [expenses, setExpenses] = useState([]);
+  const [filteredExpenses, setFilteredExpenses] = useState([]);
+  const [filter, setFilter] = useState('all'); 
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
@@ -24,6 +26,8 @@ export default function ExpenseScreen() {
       'SELECT * FROM expenses ORDER BY id DESC;'
     );
     setExpenses(rows);
+    setFilteredExpenses(rows); 
+
   };
   
   const addExpense = async () => {
@@ -77,6 +81,30 @@ export default function ExpenseScreen() {
     </View>
   );
 
+  function applyFilter(allExpenses, filterType) {
+  if (filterType === 'all') {
+    return allExpenses;
+  }
+
+  const today = new Date();
+
+  if (filterType === 'month') {
+    const monthPrefix = today.toISOString().slice(0, 7); // "2025-11"
+    return allExpenses.filter(e => e.date && e.date.startsWith(monthPrefix));
+  }
+
+  if (filterType === 'week') {
+    const weekAgo = new Date();
+    weekAgo.setDate(today.getDate() - 7);
+    const fromDate = weekAgo.toISOString().split('T')[0];
+
+    return allExpenses.filter(e => e.date && e.date >= fromDate);
+  }
+
+  return allExpenses;
+}
+
+
   useEffect(() => {
     async function setup() {
       await db.execAsync(`
@@ -94,6 +122,12 @@ export default function ExpenseScreen() {
 
     setup();
   }, []);
+
+  useEffect(() => {
+  const result = applyFilter(expenses, filter);
+  setFilteredExpenses(result);
+}, [expenses, filter]);
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -125,8 +159,15 @@ export default function ExpenseScreen() {
         <Button title="Add Expense" onPress={addExpense} />
       </View>
 
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 12 }}>
+        <Button title="All" onPress={() => setFilter('all')} />
+        <Button title="This Week" onPress={() => setFilter('week')} />
+        <Button title="This Month" onPress={() => setFilter('month')} />
+      </View>
+
+
       <FlatList
-        data={expenses}
+        data={filteredExpenses}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderExpense}
         ListEmptyComponent={
