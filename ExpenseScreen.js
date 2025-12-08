@@ -1,4 +1,3 @@
-import CategoryPieChart from './CategoryPieChart';
 import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
@@ -12,6 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { useSQLiteContext } from 'expo-sqlite';
+import CategoryPieChart from './CategoryPieChart';
 
 export default function ExpenseScreen() {
   const db = useSQLiteContext();
@@ -232,15 +232,12 @@ const { total, byCategory } = getAnalytics(filteredExpenses);
       </View>
 
       <View style={{ padding: 8 }}>
-  <Text style={{ color: '#fff', fontWeight: '700' }}>
+  <Text style={{ color: '#fff', fontWeight: '700', marginBottom: 4 }}>
     Total: ${total.toFixed(2)}
   </Text>
 
-  {Object.entries(byCategory).map(([cat, amt]) => (
-    <Text key={cat} style={{ color: '#e5e7eb', fontSize: 12 }}>
-      {cat}: ${amt.toFixed(2)}
-    </Text>
-  ))}
+  {/* Pie chart of categories */}
+  <CategoryPieChart byCategory={byCategory} />
 </View>
       <FlatList
         data={filteredExpenses}
