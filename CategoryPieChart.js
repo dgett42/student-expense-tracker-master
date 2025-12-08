@@ -69,3 +69,34 @@ export default function CategoryPieChart({ byCategory }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#020617',
+  },
+  emptyContainer: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#020617',
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#e5e7eb',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 4,
+  },
+});
